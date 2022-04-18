@@ -48,5 +48,7 @@ Material:
     m_Ints: []
     m_Floats:
     - Color_Limit: 128
+    - _QueueControl: 0
+    - _QueueOffset: 0
     m_Colors: []
   m_BuildTextureStacks: []

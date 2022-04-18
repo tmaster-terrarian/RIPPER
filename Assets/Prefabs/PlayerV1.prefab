@@ -2390,7 +2390,7 @@ MonoBehaviour:
   dashCooldown: 0.5
   groundLayer:
     serializedVersion: 2
-    m_Bits: 8
+    m_Bits: 31752
   moveSmoothTime: 0.1
   mouseSmoothTime: 0.03
   cameraTiltSmoothing: 0.02
@@ -2414,9 +2414,9 @@ MonoBehaviour:
   adrenaline: 0
   adrenalineMax: 100
   adrenalineDrainRate: 3
-  transitionInSpeed: 1
-  transitionOutSpeed: 1
-  debugPassiveGainRate: 1
+  transitionInSpeed: 4
+  transitionOutSpeed: 3
+  debugPassiveGainRate: 0
 --- !u!136 &3262316385437825999
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -2545,7 +2545,7 @@ MonoBehaviour:
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 1
-  m_Antialiasing: 2
+  m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
   m_Dithering: 0
@@ -2743,9 +2743,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d5407e885e05794f884796e6ce80eeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  delayIntensityMouse: 3
-  smoothAmountMouse: 2
-  maxDistanceMouse: {x: 0.3, y: 0.4}
+  delayIntensityMouse: 10
+  smoothAmountMouse: 1.5
+  maxDistanceMouse: {x: 0.5, y: 0.5}
   delayIntensityMovement: 2
   smoothAmountMovement: 5
   maxDistanceMovement: {x: 0.1, y: 0.1}
