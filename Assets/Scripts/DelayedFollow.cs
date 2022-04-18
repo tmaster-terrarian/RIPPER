@@ -17,7 +17,7 @@ public class DelayedFollow : MonoBehaviour
         startPos = transform.localPosition;
     }
 
-    void Update()
+    void FixedUpdate()
     {
         FollowMouse();
         FollowPosition();
