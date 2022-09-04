@@ -2323,7 +2323,6 @@ GameObject:
   - component: {fileID: 3262316385437826033}
   - component: {fileID: 3262316385437826032}
   - component: {fileID: 4994936913552334493}
-  - component: {fileID: 3262316385437825999}
   m_Layer: 0
   m_Name: PlayerV1
   m_TagString: Untagged
@@ -2413,24 +2412,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   adrenaline: 0
   adrenalineMax: 100
-  adrenalineDrainRate: 3
+  adrenalineDrainRate: 30
   transitionInSpeed: 4
   transitionOutSpeed: 3
   debugPassiveGainRate: 0
---- !u!136 &3262316385437825999
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3262316385437826035}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 0
-  m_Radius: 0.45
-  m_Height: 1.9
-  m_Direction: 1
-  m_Center: {x: 0, y: 0.95, z: 0}
 --- !u!1 &3262316385445109982
 GameObject:
   m_ObjectHideFlags: 0

@@ -56,17 +56,21 @@ public class AdrenalineSystem : MonoBehaviour
             adrenalineAlertText.SetActive(false);
         }
 
-        DrainAdrenaline();
         Debug();
+    }
+
+    void FixedUpdate()
+    {
+        DrainAdrenaline();
     }
 
     void Debug()
     {
-        if(Input.GetKeyDown(KeyCode.Keypad0))
+        if(Input.GetKeyDown(KeyCode.Alpha1))
         {
             Add(10);
         }
-        if(Input.GetKeyDown(KeyCode.Keypad1))
+        if(Input.GetKeyDown(KeyCode.Alpha2))
         {
             Add(-10);
         }
@@ -88,7 +92,7 @@ public class AdrenalineSystem : MonoBehaviour
         }
     }
 
-    ///<summary>Add (or subtract) a value from the player's adrenaline.</summary>
+    ///<summary>Add a value to the player's adrenaline (or subtract).</summary>
     public void Add(float value)
     {
         adrenaline += value;

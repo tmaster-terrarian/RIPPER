@@ -9486,6 +9486,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayerPosFollower
       objectReference: {fileID: 0}
+    - target: {fileID: 4362407895939485190, guid: 45aabf61eda7a8b4e94fbf129d713a79, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 45aabf61eda7a8b4e94fbf129d713a79, type: 3}
 --- !u!1001 &5196848140885021991
