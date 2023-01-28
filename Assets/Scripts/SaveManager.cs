@@ -27,6 +27,6 @@ public class SaveManager : MonoBehaviour
     {
         string content = File.ReadAllText(Application.persistentDataPath + "/Saves/" + fileName);
 
-        playerData = JsonUtility.FromJson<T>(content);
+        playerData = JsonUtility.FromJson<PlayerData>(content);
     }
 }
