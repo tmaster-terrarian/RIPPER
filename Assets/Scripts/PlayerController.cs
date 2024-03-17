@@ -27,6 +27,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Transform worldUp;
 
     float cameraPitch = 0.0f;
+    float velocityX = 0.0f;
     float velocityY = 0.0f;
     float jumpForce;
     [HideInInspector]
@@ -50,7 +51,7 @@ public class PlayerController : MonoBehaviour
 
     float distance;
 
-    void Start()
+    void Awake()
     {
         controller = GetComponent<CharacterController>();
 
@@ -66,12 +67,21 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        isGrounded = Physics.CheckSphere(transform.position, 0.07f, groundLayer) || controller.isGrounded;
+
         UpdateMouseLook();
         UpdateMovement();
         UpdateDash();
         CollisionDetectionFix();
 
-        isGrounded = Physics.CheckSphere(transform.position, 0.07f, groundLayer);
+        if(transform.position.y <= -50.0f)
+        {
+            transform.position = Vector3.up;
+            velocity = Vector3.zero;
+            jumpForce = 0f;
+            velocityX = 0f;
+            velocityY = 0f;
+        }
 
         playerPosFollower.position = transform.position;
     }
@@ -100,13 +110,13 @@ public class PlayerController : MonoBehaviour
 
         currentDir = Vector2.SmoothDamp(currentDir, targetDir, ref currentDirVelocity, moveSmoothTime);
 
-        if(isGrounded || controller.isGrounded)
+        if(isGrounded)
         {
             if(Input.GetKeyDown(KeyCode.Space))
             {
                 jumpForce = Mathf.Sqrt(jumpHeight * -2 * gravity);
             }
-            if(!Input.GetKeyDown(KeyCode.Space))
+            else
             {
                 jumpForce = 0.0f;
             }
@@ -115,8 +125,9 @@ public class PlayerController : MonoBehaviour
         }
 
         velocityY += gravity * Time.deltaTime;
+        Vector3 _velX = (transform.forward * currentDir.y + transform.right * currentDir.x) * walkSpeed;
 
-        velocity = ((transform.forward * currentDir.y + transform.right * currentDir.x) * walkSpeed) + (worldUp.up * jumpForce) + (worldUp.up * velocityY);
+        velocity = _velX + (worldUp.up * jumpForce) + (worldUp.up * velocityY);
 
         controller.Move(velocity * Time.deltaTime);
     }
@@ -137,7 +148,8 @@ public class PlayerController : MonoBehaviour
 
         while(Time.time < startTime + dashTime)
         {
-            controller.Move(velocity * dashSpeed * Time.deltaTime);
+            Vector3 vel = new Vector3(velocity.x, 0, velocity.y);
+            controller.Move(vel * dashSpeed * Time.deltaTime);
 
             yield return null;
         }
@@ -154,9 +166,9 @@ public class PlayerController : MonoBehaviour
         RaycastHit hit;
 
         //Bottom of controller. Slightly above ground so it doesn't bump into slanted platforms. (Adjust to your needs)
-        Vector3 p1 = transform.position + Vector3.up * 0.25f;
+        Vector3 p1 = transform.position + worldUp.up * 0.25f;
         //Top of controller
-        Vector3 p2 = p1 + Vector3.up * controller.height;
+        Vector3 p2 = p1 + worldUp.up * controller.height;
 
         //Check around the character in a 360, 10 times (increase if more accuracy is needed)
         for(int i=0; i<360; i+= 36)
@@ -171,9 +183,17 @@ public class PlayerController : MonoBehaviour
 
         //[Optional] Check the players feet and push them up if something clips through their feet.
         //(Useful for vertical moving platforms)
-        if (Physics.Raycast(transform.position + Vector3.up, - Vector3.up, out hit, 1, 1 << groundLayer))
+        if (Physics.Raycast(transform.position + worldUp.up, -worldUp.up, out hit, 1, 1 << groundLayer))
         {
             controller.Move(Vector3.up * (1 - hit.distance));
+        }
+
+        RaycastHit jumpStopHit;
+
+        if(Physics.Raycast(transform.position, worldUp.up, out jumpStopHit, controller.height + 0.06f, groundLayer))
+        {
+            jumpForce = 0;
+            velocityY = Mathf.Max(velocityY, 0);
         }
     }
 }

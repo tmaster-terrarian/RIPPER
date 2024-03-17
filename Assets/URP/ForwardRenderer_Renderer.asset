@@ -15,13 +15,13 @@ MonoBehaviour:
   m_Active: 0
   m_Shader: {fileID: 4800000, guid: 0849e84e3d62649e8882e9d6f056a017, type: 3}
   m_Settings:
-    Downsample: 0
+    Downsample: 1
     AfterOpaque: 0
     Source: 1
     NormalSamples: 1
-    Intensity: 3
+    Intensity: 0.2
     DirectLightingStrength: 0.25
-    Radius: 0.035
+    Radius: 0.1
     SampleCount: 6
 --- !u!114 &11400000
 MonoBehaviour:
@@ -40,7 +40,9 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: -4607962769394713890}
   - {fileID: 5172173662277987983}
-  m_RendererFeatureMap: deba0078463a0dc08feeb5e08a40c747
+  - {fileID: 3079459490208730788}
+  - {fileID: 263320440983094408}
+  m_RendererFeatureMap: deba0078463a0dc08feeb5e08a40c747a4ce18361770bc2a8884e5c28b80a703
   m_UseNativeRenderPass: 0
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   xrSystemData: {fileID: 11400000, guid: 60e1133243b97e347b653163a8c01b64, type: 2}
@@ -70,13 +72,91 @@ MonoBehaviour:
     passOperation: 2
     failOperation: 0
     zFailOperation: 0
-  m_ShadowTransparentReceive: 0
+  m_ShadowTransparentReceive: 1
   m_RenderingMode: 0
-  m_DepthPrimingMode: 0
+  m_DepthPrimingMode: 1
   m_AccurateGbufferNormals: 0
   m_ClusteredRendering: 0
   m_TileSize: 32
   m_IntermediateTextureMode: 1
+--- !u!114 &263320440983094408
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b3d386ba5cd94485973aee1479b272e, type: 3}
+  m_Name: colorLimitViewModels
+  m_EditorClassIdentifier: 
+  m_Active: 0
+  settings:
+    passTag: colorLimitViewModels
+    Event: 1000
+    filterSettings:
+      RenderQueueType: 1
+      LayerMask:
+        serializedVersion: 2
+        m_Bits: 512
+      PassNames: []
+    overrideMaterial: {fileID: 2100000, guid: e7d9692eac91e6f49ba74f22205add55, type: 2}
+    overrideMaterialPassIndex: 0
+    overrideDepthState: 0
+    depthCompareFunction: 8
+    enableWrite: 0
+    stencilSettings:
+      overrideStencilState: 0
+      stencilReference: 0
+      stencilCompareFunction: 8
+      passOperation: 0
+      failOperation: 0
+      zFailOperation: 0
+    cameraSettings:
+      overrideCamera: 0
+      restoreCamera: 1
+      offset: {x: 0, y: 0, z: 0, w: 0}
+      cameraFieldOfView: 100
+--- !u!114 &3079459490208730788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b3d386ba5cd94485973aee1479b272e, type: 3}
+  m_Name: colorLimit
+  m_EditorClassIdentifier: 
+  m_Active: 0
+  settings:
+    passTag: colorLimit
+    Event: 1000
+    filterSettings:
+      RenderQueueType: 0
+      LayerMask:
+        serializedVersion: 2
+        m_Bits: 32223
+      PassNames: []
+    overrideMaterial: {fileID: 2100000, guid: e7d9692eac91e6f49ba74f22205add55, type: 2}
+    overrideMaterialPassIndex: 0
+    overrideDepthState: 0
+    depthCompareFunction: 4
+    enableWrite: 0
+    stencilSettings:
+      overrideStencilState: 0
+      stencilReference: 0
+      stencilCompareFunction: 8
+      passOperation: 0
+      failOperation: 0
+      zFailOperation: 0
+    cameraSettings:
+      overrideCamera: 0
+      restoreCamera: 1
+      offset: {x: 0, y: 0, z: 0, w: 0}
+      cameraFieldOfView: 100
 --- !u!114 &5172173662277987983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -89,21 +169,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b3d386ba5cd94485973aee1479b272e, type: 3}
   m_Name: Outline
   m_EditorClassIdentifier: 
-  m_Active: 1
+  m_Active: 0
   settings:
     passTag: Outline
-    Event: 550
+    Event: 300
     filterSettings:
       RenderQueueType: 0
       LayerMask:
         serializedVersion: 2
-        m_Bits: 511
+        m_Bits: 32255
       PassNames: []
     overrideMaterial: {fileID: 2100000, guid: 892020c5dfc17404ebfdf987c7d8d2c7, type: 2}
     overrideMaterialPassIndex: 0
     overrideDepthState: 0
     depthCompareFunction: 4
-    enableWrite: 1
+    enableWrite: 0
     stencilSettings:
       overrideStencilState: 0
       stencilReference: 0
