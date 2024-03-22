@@ -9,6 +9,11 @@ TagManager:
   - AdrenalineBar
   - AdrenalineAlertText
   - AdrenalinePPVolume
+  - CrosshairW
+  - CrosshairN
+  - CrosshairS
+  - CrosshairE
+  - VIEWMODEL
   layers:
   - Default
   - TransparentFX

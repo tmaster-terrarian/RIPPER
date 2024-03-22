@@ -1,6 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using System;
+using bsc;
 
 public class PlayerController : MonoBehaviour
 {
@@ -30,8 +33,7 @@ public class PlayerController : MonoBehaviour
     float velocityX = 0.0f;
     float velocityY = 0.0f;
     float jumpForce;
-    [HideInInspector]
-    public Vector3 velocity;
+    [HideInInspector] public Vector3 velocity { get; protected set; }
     CharacterController controller = null;
 
     Vector2 targetDir = Vector2.zero;
@@ -51,9 +53,40 @@ public class PlayerController : MonoBehaviour
 
     float distance;
 
+    Slider[] crosshairSegments;
+    Ticker recoil = new Ticker();
+    float maxRecoil = 4;
+
+    Ticker firedelay = new Ticker();
+    float fireinterval = 10;
+
+    public float atkSpd = 1;
+
+    GameObject viewModel = null;
+    Animator viewModelAnimator = null;
+    GameObject viewModel2 = null;
+    Animator viewModelAnimator2 = null;
+    float alternator = 1;
+
     void Awake()
     {
         controller = GetComponent<CharacterController>();
+
+        viewModel = GameObject.FindGameObjectsWithTag("VIEWMODEL")[0];
+        viewModelAnimator = viewModel.GetComponent<Animator>();
+        viewModel2 = GameObject.FindGameObjectsWithTag("VIEWMODEL")[1];
+        viewModelAnimator2 = viewModel2.GetComponent<Animator>();
+
+        recoil.Reconfigure(maxRecoil, () => {return;});
+        recoil.rate = 0.2f;
+        firedelay.Reconfigure(fireinterval / atkSpd, () => {return;});
+
+        crosshairSegments = new Slider[4] {
+            GameObject.FindGameObjectWithTag("CrosshairW").GetComponent<Slider>(),
+            GameObject.FindGameObjectWithTag("CrosshairE").GetComponent<Slider>(),
+            GameObject.FindGameObjectWithTag("CrosshairN").GetComponent<Slider>(),
+            GameObject.FindGameObjectWithTag("CrosshairS").GetComponent<Slider>()
+        };
 
         if(lockCursor)
         {
@@ -70,6 +103,7 @@ public class PlayerController : MonoBehaviour
         isGrounded = Physics.CheckSphere(transform.position, 0.07f, groundLayer) || controller.isGrounded;
 
         UpdateMouseLook();
+        UpdateAttacks();
         UpdateMovement();
         UpdateDash();
         CollisionDetectionFix();
@@ -84,6 +118,13 @@ public class PlayerController : MonoBehaviour
         }
 
         playerPosFollower.position = transform.position;
+
+        UpdateCrosshair();
+    }
+
+    void FixedUpdate()
+    {
+        UpdateTickers();
     }
 
     void UpdateMouseLook()
@@ -99,6 +140,38 @@ public class PlayerController : MonoBehaviour
 
         playerCamera.localEulerAngles = Vector3.right * cameraPitch + Vector3.forward * Mathf.LerpAngle(playerCamera.localEulerAngles.z, cameraTilt, cameraTiltSmoothing);
         transform.Rotate(Vector3.up * currentMouseDelta.x * mouseSensitivity);
+    }
+
+    void UpdateAttacks()
+    {
+        if(Input.GetMouseButton(0) && firedelay.isDone)
+        {
+            firedelay.Reset();
+            recoil.value = Mathf.Min(recoil.value + 2.5f, maxRecoil);
+
+            viewModelAnimator.SetFloat("atkSpd", atkSpd);
+            viewModelAnimator2.SetFloat("atkSpd", atkSpd);
+
+            if(alternator == 1)
+            {
+                viewModelAnimator.SetBool("firing", true);
+                viewModelAnimator2.SetBool("firing", false);
+            }
+            else
+            {
+                viewModelAnimator.SetBool("firing", false);
+                viewModelAnimator2.SetBool("firing", true);
+            }
+
+            alternator = -alternator;
+
+            SFX.Play($"mando_M1_{UnityEngine.Random.Range(1, 12)}", 0.25f);
+        }
+        else
+        {
+            viewModelAnimator.SetBool("firing", false);
+            viewModelAnimator2.SetBool("firing", false);
+        }
     }
 
     void UpdateMovement()
@@ -148,7 +221,7 @@ public class PlayerController : MonoBehaviour
 
         while(Time.time < startTime + dashTime)
         {
-            Vector3 vel = new Vector3(velocity.x, 0, velocity.y);
+            Vector3 vel = new Vector3(velocity.x, 0, velocity.z);
             controller.Move(vel * dashSpeed * Time.deltaTime);
 
             yield return null;
@@ -194,6 +267,28 @@ public class PlayerController : MonoBehaviour
         {
             jumpForce = 0;
             velocityY = Mathf.Max(velocityY, 0);
+        }
+    }
+
+    void UpdateTickers()
+    {
+        recoil.Update();
+        firedelay.Update();
+    }
+
+    void UpdateCrosshair()
+    {
+        foreach(Slider slider in crosshairSegments)
+        {
+            try
+            {
+                slider.value = recoil.value / maxRecoil;
+            }
+            catch(Exception e)
+            {
+                Debug.LogException(e, this.gameObject);
+                return;
+            }
         }
     }
 }
