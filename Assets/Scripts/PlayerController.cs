@@ -165,7 +165,7 @@ public class PlayerController : MonoBehaviour
 
             alternator = -alternator;
 
-            SFX.Play($"mando_M1_{UnityEngine.Random.Range(1, 12)}", 0.25f);
+            SFX.Play($"mando_M1_{UnityEngine.Random.Range(1, 12)}", 0.1f);
         }
         else
         {
