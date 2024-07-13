@@ -8,5 +8,11 @@ public class GameManager : MonoBehaviour
     {
         Application.targetFrameRate = 60;
         Screen.SetResolution(1920, 1080, false, 60);
+        Screen.fullScreenMode = FullScreenMode.FullScreenWindow;
+    }
+
+    void Start()
+    {
+
     }
 }

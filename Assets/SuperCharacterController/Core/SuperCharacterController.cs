@@ -6,8 +6,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 /// <summary>
-/// Custom character controller, to be used by attaching the component to an object
-/// and writing scripts attached to the same object that recieve the "SuperUpdate" message
+/// Custom character controller, to be used by attaching the component to an object and writing scripts attached to the same object that recieve the "SuperUpdate" message
 /// </summary>
 public class SuperCharacterController : MonoBehaviour
 {
@@ -69,6 +68,9 @@ public class SuperCharacterController : MonoBehaviour
 
     [SerializeField]
     public float radius = 0.5f;
+
+    [SerializeField]
+    public float maxClampingDistance = 1000;
 
     public float deltaTime { get; private set; }
     public SuperGround currentGround { get; private set; }
@@ -274,7 +276,8 @@ public class SuperCharacterController : MonoBehaviour
     void ClampToGround()
     {
         float d = currentGround.Distance();
-        transform.position -= up * d;
+        if(d <= maxClampingDistance)
+            transform.position -= up * d;
     }
 
     public void EnableClamping()

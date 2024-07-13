@@ -33,4 +33,12 @@ public struct Utils
         else
             return Mathf.Max((value - rate), target);
     }
+
+    public static int Approach(int value, int target, int rate)
+    {
+        if (value < target)
+            return Mathf.Min((value + rate), target);
+        else
+            return Mathf.Max((value - rate), target);
+    }
 }

@@ -2,107 +2,203 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SuperPlayerController : MonoBehaviour
+public class SuperPlayerController : SuperStateMachine
 {
-    SuperCharacterController characterController;
-    [SerializeField] bool lockCursor = true;
-    [SerializeField] Transform playerCamera = null;
-    [SerializeField] float mouseSensitivity = 3.5f;
+    SuperCharacterController controller;
+    Vector2 targetDir = Vector2.zero;
+
+    private enum PlayerState { Idle, Walk, Jump, Fall }
+
+    private bool AcquiringGround => controller.currentGround.IsGrounded(false, 0.01f);
+    private bool MaintainingGround => controller.currentGround.IsGrounded(true, 0.5f);
+
+    [SerializeField] Transform orientation;
     [SerializeField] float walkSpeed = 6.0f;
-    [SerializeField] float strafeMultiplier = 1.2f;
     [SerializeField] float gravity = -13.0f;
     [SerializeField] float jumpHeight = 2.0f;
-    [SerializeField][Range(0.0f, 0.5f)] float moveSmoothTime = 0.3f;
-    [SerializeField][Range(0.0f, 0.5f)] float mouseSmoothTime = 0.03f;
-    [SerializeField] float cameraTiltSmoothing = 0.01f; // should be around 1/100 of tilt modifier for best smoothing
-    [SerializeField][Range(0.0f, 10f)] float cameraTiltMultiplier = 1.0f; // more than 1.0f gets rediculous fast
-    [SerializeField] Transform playerPosFollower;
-    [SerializeField] Transform worldUp;
 
-    float cameraPitch = 0.0f;
-    float velocityY = 0.0f;
-    float jumpForce;
-    [HideInInspector]
-    public Vector3 velocity;
+    public float JumpForce => Mathf.Sqrt(jumpHeight * -2 * gravity);
 
-    Vector2 targetDir = Vector2.zero;
-    Vector2 currentDir = Vector2.zero;
-    Vector2 currentDirVelocity = Vector2.zero;
+    [HideInInspector] public Vector3 Velocity = Vector3.zero;
+    public bool IsGrounded { get; private set; }
 
-    Vector2 targetMouseDelta = Vector2.zero;
-    Vector2 currentMouseDelta = Vector2.zero;
-    Vector2 currentMouseDeltaVelocity = Vector2.zero;
-
-    Vector3 lastPosition;
+    public Vector2 InputDir => targetDir.normalized;
 
     void Start()
     {
-        characterController = new SuperCharacterController();
-        characterController.DisableClamping();
+        controller = GetComponent<SuperCharacterController>();
+        // controller.maxClampingDistance = Mathf.Abs(JumpForce) * 1/60f;
 
-        if(lockCursor)
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
-
-        lastPosition = transform.position;
+        currentState = PlayerState.Idle;
     }
 
-    void SuperUpdate()
-    {
-        UpdateMouseLook();
-        UpdateMovement();
-    }
-
-    void UpdateMouseLook()
-    {
-        targetMouseDelta = new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
-
-        currentMouseDelta = Vector2.SmoothDamp(currentMouseDelta, targetMouseDelta, ref currentMouseDeltaVelocity, mouseSmoothTime);
-
-        cameraPitch -= currentMouseDelta.y * mouseSensitivity;
-        cameraPitch = Mathf.Clamp(cameraPitch, -90.0f, 90.0f);
-
-        float cameraTilt = cameraTiltMultiplier * -1 * targetDir.x;
-
-        playerCamera.localEulerAngles = Vector3.right * cameraPitch + Vector3.forward * Mathf.LerpAngle(playerCamera.localEulerAngles.z, cameraTilt, cameraTiltSmoothing);
-        transform.Rotate(Vector3.up * currentMouseDelta.x * mouseSensitivity);
-    }
-
-    void UpdateMovement()
+    void Update()
     {
         targetDir = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         targetDir.Normalize();
 
-        targetDir.x *= strafeMultiplier;
+        // Vector2 _target = new(targetDir.x * strafeMultiplier, targetDir.y);
 
-        currentDir = Vector2.SmoothDamp(currentDir, targetDir, ref currentDirVelocity, moveSmoothTime);
+        // Velocity = Vector2.SmoothDamp(Velocity, _target, ref currentDirVelocity, moveSmoothTime);
+    }
 
-        bool isGrounded = Physics.CheckSphere(transform.position, 0.07f, characterController.Walkable);
+    protected override void EarlyGlobalSuperUpdate()
+    {
+        // Put any code in here you want to run BEFORE the state's update function.
+        // This is run regardless of what state you're in
+    }
 
-        if(isGrounded)
+    protected override void LateGlobalSuperUpdate()
+    {
+        // Put any code in here you want to run AFTER the state's update function.
+        // This is run regardless of what state you're in
+
+        // Move the player by our velocity every frame
+        transform.position += Velocity * controller.deltaTime;
+
+        if(transform.position.y <= -50.0f)
         {
-            if(Input.GetKeyDown(KeyCode.Space))
-            {
-                jumpForce = Mathf.Sqrt(jumpHeight * -2 * gravity);
-            }
-            if(!Input.GetKeyDown(KeyCode.Space))
-            {
-                jumpForce = 0.0f;
-            }
-
-            velocityY = Mathf.Clamp(velocityY, 0.0f, 100.0f);
+            transform.position = Vector3.zero;
+            Velocity = Vector3.zero;
+            currentState = PlayerState.Idle;
+            controller.EnableSlopeLimit();
+            controller.EnableClamping();
         }
+    }
 
-        velocityY += gravity * Time.deltaTime;
-
-        velocity = ((transform.forward * currentDir.y + transform.right * currentDir.x) * walkSpeed)/* + (worldUp.up * jumpForce) + (worldUp.up * velocityY)*/;
+    private Vector3 LocalMovement()
+    {
+        Vector3 local = Vector3.zero;
 
         if(targetDir != Vector2.zero)
         {
-            transform.position = Vector3.MoveTowards(transform.position, velocity + lastPosition, 5 * Time.deltaTime);
+            local += orientation.forward * targetDir.y + orientation.right * targetDir.x;
         }
-        lastPosition = transform.position;
+
+        return local.normalized;
     }
+
+    #region Idle State
+
+    void Idle_EnterState()
+    {
+        controller.EnableSlopeLimit();
+        controller.EnableClamping();
+    }
+
+    void Idle_SuperUpdate()
+    {
+        // Run every frame we are in the idle state
+
+        if(Input.GetKeyDown(KeyCode.Space))
+        {
+            currentState = PlayerState.Jump;
+            return;
+        }
+
+        if(!MaintainingGround)
+        {
+            currentState = PlayerState.Fall;
+            return;
+        }
+
+        if(targetDir != Vector2.zero)
+        {
+            currentState = PlayerState.Walk;
+            return;
+        }
+
+        // Apply friction to slow us to a halt
+        Velocity = Vector3.MoveTowards(Velocity, Vector3.zero, 50 * controller.deltaTime);
+    }
+
+    void Idle_ExitState()
+    {
+        // Run once when we exit the idle state
+    }
+
+    #endregion
+
+    #region Walk State
+
+    void Walk_SuperUpdate()
+    {
+        if(Input.GetKeyDown(KeyCode.Space))
+        {
+            currentState = PlayerState.Jump;
+            return;
+        }
+
+        if(!MaintainingGround)
+        {
+            currentState = PlayerState.Fall;
+            return;
+        }
+
+        if(targetDir != Vector2.zero)
+        {
+            Velocity = Vector3.MoveTowards(Velocity, LocalMovement() * walkSpeed, 40 * controller.deltaTime);
+        }
+        else
+        {
+            currentState = PlayerState.Idle;
+            return;
+        }
+    }
+
+    #endregion
+
+    #region Jump State
+
+    void Jump_EnterState()
+    {
+        controller.DisableClamping();
+        controller.DisableSlopeLimit();
+
+        Velocity += controller.up * JumpForce;
+    }
+
+    void Jump_SuperUpdate()
+    {
+        Vector3 planarMoveDirection = Math3d.ProjectVectorOnPlane(controller.up, Velocity);
+        Vector3 verticalMoveDirection = Velocity - planarMoveDirection;
+
+        if(Vector3.Angle(verticalMoveDirection, controller.up) > 90 && AcquiringGround)
+        {
+            Velocity = planarMoveDirection;
+            currentState = PlayerState.Idle;
+            return;            
+        }
+
+        planarMoveDirection = Vector3.MoveTowards(planarMoveDirection, LocalMovement() * walkSpeed, 40 * controller.deltaTime);
+        verticalMoveDirection += controller.up * gravity * controller.deltaTime;
+
+        Velocity = planarMoveDirection + verticalMoveDirection;
+    }
+
+    #endregion
+
+    #region Fall State
+
+    void Fall_EnterState()
+    {
+        controller.DisableClamping();
+        controller.DisableSlopeLimit();
+
+        // moveDirection = trueVelocity;
+    }
+
+    void Fall_SuperUpdate()
+    {
+        if(AcquiringGround)
+        {
+            Velocity = Math3d.ProjectVectorOnPlane(controller.up, Velocity);
+            currentState = PlayerState.Idle;
+            return;
+        }
+
+        Velocity += controller.up * gravity * controller.deltaTime;
+    }
+
+    #endregion
 }
